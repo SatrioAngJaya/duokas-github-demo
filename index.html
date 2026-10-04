@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DuoKas: Pisahkan uang pribadi dan bisnis</title>
+<meta name="description" content="DuoKas mencatat keuangan pribadi dan bisnis secara terpisah, dalam kurs apa pun, cukup lewat chat Telegram.">
+<!-- Font: Plus Jakarta Sans (dari Google Fonts) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ===== WARNA & DASAR ===== */
+/* Hijau teal = kantong Pribadi, oranye tembaga = kantong Bisnis */
+:root{--bg:#FFFFFF;--soft:#F3F6F8;--ink:#162433;--muted:#5B6B7A;--line:#E2E8EE;
+  --pri:#0E7C6B;--pri-soft:#E3F3EF;--biz:#B5651D;--biz-soft:#FBEFE3;--live:#16A34A;--bad:#B42318}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;font-size:17px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+:focus-visible{outline:3px solid var(--pri);outline-offset:3px;border-radius:6px}
+
+/* ===== HEADER & TOMBOL ===== */
+header{border-bottom:1px solid var(--line)}
+.nav{display:flex;justify-content:space-between;align-items:center;height:68px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.15rem;text-decoration:none;color:var(--ink)}
+/* Logo: dua lingkaran bertumpuk = dua kantong */
+.mark{position:relative;width:34px;height:24px;flex:none}
+.mark i{position:absolute;top:0;width:24px;height:24px;border-radius:50%}
+.mark i:first-child{left:0;background:var(--pri)}
+.mark i:last-child{right:0;background:var(--biz);mix-blend-mode:multiply}
+.mark.big{width:62px;height:44px}.mark.big i{width:44px;height:44px}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--ink);color:#fff;text-decoration:none;font:inherit;font-weight:700;padding:12px 20px;border-radius:10px;border:0;cursor:pointer}
+.btn:hover{background:#24394f}
+.btn.small{padding:8px 14px;font-size:.9rem}
+.btn.wa{background:#25D366;color:#0B3B1E;font-size:1.05rem;padding:16px 28px}
+.btn.wa:hover{background:#1FBF5B}
+.link{font-weight:600;color:var(--pri)}
+
+/* ===== 1. HERO ===== */
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:56px;align-items:center;padding:72px 0 80px}
+.badge{display:inline-flex;align-items:center;gap:8px;font-size:.85rem;font-weight:600;color:#166534;background:#ECFDF3;border:1px solid #BBF7D0;padding:6px 12px;border-radius:999px;margin-top:20px}
+.glow{animation:glow 1.8s ease-in-out infinite}
+@keyframes glow{50%{opacity:.35}}
+h1{font-size:clamp(2.8rem,6vw,4.4rem);line-height:1.05;letter-spacing:-.03em;font-weight:800;margin:14px 0}
+.tagline{font-size:1.25rem;color:var(--muted);max-width:34ch}
+.hero-cta{margin-top:28px;display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+/* Kartu ringkasan dua kantong */
+.ledger{border:1px solid var(--line);border-radius:18px;padding:24px;box-shadow:0 24px 48px -28px rgba(22,36,51,.35)}
+.ledger-title{font-weight:700}
+.pockets{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0 6px}
+.pocket{border-radius:12px;padding:16px}
+.pocket.p{background:var(--pri-soft)}.pocket.b{background:var(--biz-soft)}
+.pocket span{font-size:.85rem;font-weight:700}
+.pocket.p span{color:var(--pri)}.pocket.b span{color:var(--biz)}
+.pocket strong{display:block;font-size:1.6rem;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.pocket small{color:var(--muted);font-size:.8rem}
+.row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line);font-size:.92rem}
+.row:first-of-type{border-top:0}
+.row b{font-variant-numeric:tabular-nums;text-align:right}
+
+/* ===== SECTION UMUM ===== */
+section{padding:80px 0}
+.alt{background:var(--soft)}
+h2{font-size:clamp(1.8rem,3.5vw,2.4rem);line-height:1.15;letter-spacing:-.02em;font-weight:800;max-width:24ch}
+.lead{color:var(--muted);margin-top:12px;max-width:60ch}
+
+/* ===== 2. PROBLEM & SOLUTION ===== */
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:40px}
+.col{background:#fff;border-radius:16px;padding:28px;border:1px solid var(--line)}
+.col.chaos{border-top:4px solid var(--bad)}.col.solution{border-top:4px solid var(--pri)}
+.col h3{font-size:1.25rem;margin-bottom:18px}
+.col ul{list-style:none;display:grid;gap:14px}
+.col li{padding-left:30px;position:relative}
+.col li::before{position:absolute;left:0;font-weight:800}
+.chaos li::before{content:"✕";color:var(--bad)}
+.solution li::before{content:"✓";color:var(--pri)}
+
+/* ===== 3. CORE CAPABILITIES ===== */
+.caps{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;margin-top:40px}
+.cap{padding-top:24px;border-top:2px solid var(--ink)}
+.cap .ico{font-size:1.7rem}
+.cap h3{font-size:1.15rem;margin:10px 0 8px}
+.cap p{color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.chip{font-size:.78rem;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--soft);border:1px solid var(--line)}
+
+/* ===== 4. SIMULASI CHAT ===== */
+.demo{display:grid;grid-template-columns:.85fr 1.15fr;gap:40px;align-items:start}
+.scen{display:grid;gap:10px;margin-top:24px}
+.scen button{text-align:left;background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;font:inherit;font-weight:600;color:var(--ink);cursor:pointer}
+.scen button:hover:not(:disabled){border-color:var(--pri)}
+.scen button[aria-pressed="true"]{border-color:var(--pri);background:var(--pri-soft)}
+.scen button:disabled{opacity:.55;cursor:wait}
+.chat{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.chat-head{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line);font-weight:700}
+.chat-head small{display:block;color:var(--live);font-size:.78rem;font-weight:600}
+.sim{margin-left:auto;font-size:.75rem;font-weight:700;color:var(--biz);background:var(--biz-soft);padding:3px 10px;border-radius:999px}
+.msgs{height:400px;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:10px;background:#EEF3F6}
+.empty{margin:auto;color:var(--muted);text-align:center;font-size:.92rem;max-width:26ch}
+.msg{max-width:84%;padding:10px 14px;border-radius:14px;font-size:.93rem;white-space:pre-line;animation:pop .25s ease-out}
+.msg.user{align-self:flex-end;background:var(--ink);color:#fff;border-bottom-right-radius:4px}
+.msg.bot{align-self:flex-start;background:#fff;border-bottom-left-radius:4px}
+.msg.typing{display:flex;gap:4px;padding:14px 16px}
+.msg.typing i{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:blink 1s infinite}
+.msg.typing i:nth-child(2){animation-delay:.15s}.msg.typing i:nth-child(3){animation-delay:.3s}
+@keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+@keyframes pop{from{opacity:0;transform:translateY(6px)}}
+
+/* ===== 5. CTA & FOOTER ===== */
+.cta{background:var(--ink);color:#fff;border-radius:24px;padding:56px;text-align:center}
+.cta h2{margin:0 auto}
+.cta p{color:#C8D3DD;margin:14px auto 28px;max-width:52ch}
+footer{padding:28px 0 40px;text-align:center;color:var(--muted);font-size:.9rem}
+
+/* ===== TAMPILAN HP ===== */
+@media(max-width:820px){
+  .hero,.compare,.caps,.demo{grid-template-columns:1fr}
+  .hero{padding:48px 0 56px;gap:36px}
+  section{padding:56px 0}
+  .cta{padding:40px 22px}
+  .msgs{height:360px}
+}
+/* Hormati pengguna yang mematikan animasi di perangkatnya */
+@media(prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="#"><span class="mark" aria-hidden="true"><i></i><i></i></span>DuoKas</a>
+    <a class="btn small" href="https://wa.me/67073989836?text=Halo%2C%20saya%20tertarik%20dengan%20DuoKas" target="_blank" rel="noopener">Hubungi</a>
+  </div>
+</header>
+
+<main>
+  <!-- ===== 1. HERO ===== -->
+  <div class="wrap hero">
+    <div>
+      <span class="mark big" aria-hidden="true"><i></i><i></i></span><br>
+      <span class="badge"><span class="glow" aria-hidden="true">🟢</span> Status: Active &amp; Ready 24/7</span>
+      <h1>DuoKas</h1>
+      <p class="tagline">Pisahkan uang pribadi dan bisnis, dalam kurs apa pun, cukup lewat chat Telegram.</p>
+      <div class="hero-cta">
+        <a class="btn" href="https://wa.me/67073989836?text=Halo%2C%20saya%20tertarik%20dengan%20DuoKas" target="_blank" rel="noopener">Chat via WhatsApp</a>
+        <a class="link" href="#demo">Lihat simulasinya</a>
+      </div>
+    </div>
+    <!-- Contoh tampilan ringkasan (angka ilustrasi) -->
+    <div class="ledger" aria-label="Contoh ringkasan keuangan DuoKas">
+      <p class="ledger-title">Ringkasan Oktober (dalam USD)</p>
+      <div class="pockets">
+        <div class="pocket p"><span>Pribadi</span><strong>$1,260</strong><small>dari USD + IDR</small></div>
+        <div class="pocket b"><span>Bisnis</span><strong>$4,180</strong><small>dari USD</small></div>
+      </div>
+      <div class="row"><span>Talangan belum di-reimburse</span><b>$245</b></div>
+      <div class="row"><span>Transaksi bulan ini</span><b>38</b></div>
+      <div class="row"><span>Aset tercatat</span><b>Emas, saham, crypto</b></div>
+    </div>
+  </div>
+
+  <!-- ===== 2. PROBLEM & SOLUTION ===== -->
+  <section class="alt">
+    <div class="wrap">
+      <h2>Satu dompet, dua dunia, dan catatan yang selalu bolong.</h2>
+      <p class="lead">Pemilik usaha sering membayar kebutuhan bisnis dengan uang pribadi, bertransaksi dalam beberapa mata uang, lalu kehilangan jejak di akhir bulan.</p>
+      <div class="compare">
+        <div class="col chaos">
+          <h3>The Chaos</h3>
+          <ul>
+            <li>Uang pribadi dan bisnis tercampur. Talangan untuk bisnis atau keluarga sering lupa ditagih.</li>
+            <li>Transaksi dalam USD, IDR, dan aset lain membuat rekap bulanan berantakan karena kursnya berbeda.</li>
+            <li>Aplikasi pencatat ribet dan lambat diinput, jadi banyak expense yang terlewat.</li>
+          </ul>
+        </div>
+        <div class="col solution">
+          <h3>The Solution</h3>
+          <ul>
+            <li>Setiap transaksi masuk kantong Pribadi atau Bisnis, dan talangan otomatis masuk daftar reimburse.</li>
+            <li>Catat dalam mata uang apa pun. Rekap bulanan disatukan ke satu mata uang pilihan Anda.</li>
+            <li>Cukup chat di Telegram: ketik, voice note, atau foto struk. AI yang merapikan.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 3. CORE CAPABILITIES ===== -->
+  <section>
+    <div class="wrap">
+      <h2>Tiga hal yang DuoKas kerjakan untuk Anda</h2>
+      <div class="caps">
+        <div class="cap">
+          <div class="ico" aria-hidden="true">👛</div>
+          <h3>Dua kantong, satu chat</h3>
+          <p>Transaksi dipisah ke Pribadi atau Bisnis. Uang pribadi yang terpakai untuk bisnis tercatat sebagai talangan yang bisa ditagih.</p>
+          <div class="chips"><span class="chip">Pribadi</span><span class="chip">Bisnis</span><span class="chip">Reimburse</span></div>
+        </div>
+        <div class="cap">
+          <div class="ico" aria-hidden="true">💱</div>
+          <h3>Multi-kurs dan aset</h3>
+          <p>Catat dalam USD, IDR, atau mata uang lain. Transaksi emas, saham, dan crypto ikut tercatat bersama kursnya.</p>
+          <div class="chips"><span class="chip">USD</span><span class="chip">IDR</span><span class="chip">Emas</span><span class="chip">Crypto</span></div>
+        </div>
+        <div class="cap">
+          <div class="ico" aria-hidden="true">🎙️</div>
+          <h3>Catat dengan cara apa saja</h3>
+          <p>Kirim teks, voice note, foto struk, screenshot, atau PDF. Data tersimpan ke Google Sheets, dan DuoKas bertanya dulu kalau ragu.</p>
+          <div class="chips"><span class="chip">Telegram</span><span class="chip">Google Sheets</span><span class="chip">Human-in-the-Loop</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 4. INTERACTIVE SIMULATION ===== -->
+  <section class="alt" id="demo">
+    <div class="wrap demo">
+      <div>
+        <h2>Lihat cara kerjanya</h2>
+        <p class="lead">Pilih satu skenario. Ini simulasi percakapan untuk menggambarkan alur DuoKas di Telegram.</p>
+        <div class="scen">
+          <button data-s="voice" aria-pressed="false">🎙️ Voice note: bensin mobil kantor</button>
+          <button data-s="struk" aria-pressed="false">📷 Foto struk belanja dalam Rupiah</button>
+          <button data-s="rekap" aria-pressed="false">📊 Minta rekap bulan ini</button>
+        </div>
+      </div>
+      <div class="chat">
+        <div class="chat-head">
+          <span class="mark" aria-hidden="true"><i></i><i></i></span>
+          <div>DuoKas Bot<small>online</small></div>
+          <span class="sim">Simulasi</span>
+        </div>
+        <div class="msgs" id="msgs" aria-live="polite">
+          <p class="empty">Pilih salah satu skenario untuk memulai percakapan.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 5. CTA ===== -->
+  <section>
+    <div class="wrap">
+      <div class="cta">
+        <h2>Siap berhenti mencampur uang pribadi dan bisnis?</h2>
+        <p>DuoKas sedang dalam pengembangan. Hubungi saya untuk diskusi, demo, atau ikut uji coba awal.</p>
+        <a class="btn wa" href="https://wa.me/67073989836?text=Halo%2C%20saya%20tertarik%20dengan%20DuoKas" target="_blank" rel="noopener">Chat via WhatsApp</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>Built with AI · AI Builder Bootcamp Showcase</footer>
+
+<script>
+// ===== NASKAH SIMULASI =====
+// Setiap skenario = daftar pesan berurutan: ["user" atau "bot", "isi pesan"]
+const scenarios = {
+  voice: [
+    ["user", "🎙️ Voice note (0:07)\n“Tadi isi bensin mobil kantor 20 dolar, pakai uang pribadi.”"],
+    ["bot", "Tercatat ✅\nExpense: Bensin operasional, $20.00\nKantong: Bisnis\nDibayar dari: uang pribadi\n\nMasuk daftar talangan. Total yang perlu di-reimburse ke Anda sekarang $265.00."]
+  ],
+  struk: [
+    ["user", "📷 [Foto struk] Supermarket, total Rp 850.000"],
+    ["bot", "Saya baca: Rp 850.000 ≈ $51.20 (kurs contoh 16.600).\nIni expense Pribadi atau Bisnis?"],
+    ["user", "Pribadi"],
+    ["bot", "Tersimpan ✅\nPribadi › Belanja rumah tangga\nRp 850.000 ($51.20)"]
+  ],
+  rekap: [
+    ["user", "Rekap bulan ini"],
+    ["bot", "📊 Rekap Oktober (dalam USD)\n\nPribadi: income $3,200, expense $1,940\nBisnis: expense $860\nTalangan belum kembali: $245 (6 transaksi)\nAset: beli emas 5 g, tercatat dengan kurs hari itu\n\nDetail lengkap ada di Google Sheets Anda."]
+  ]
+};
+
+const msgs = document.getElementById("msgs");
+const buttons = document.querySelectorAll(".scen button");
+const wait = (ms) => new Promise((r) => setTimeout(r, ms)); // jeda waktu
+
+// Menambahkan satu gelembung chat ke layar
+function addBubble(from, text) {
+  const div = document.createElement("div");
+  div.className = "msg " + from;
+  div.textContent = text;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight; // gulir ke pesan terbaru
+}
+
+// Memutar satu skenario: pesan user → titik-titik mengetik → balasan bot
+async function play(key, clicked) {
+  buttons.forEach((b) => { b.disabled = true; b.setAttribute("aria-pressed", b === clicked); });
+  msgs.innerHTML = ""; // kosongkan chat sebelumnya
+  for (const [from, text] of scenarios[key]) {
+    if (from === "user") {
+      await wait(300);
+      addBubble("user", text);
+    } else {
+      const typing = document.createElement("div");
+      typing.className = "msg bot typing";
+      typing.setAttribute("aria-label", "DuoKas sedang mengetik");
+      typing.innerHTML = "<i></i><i></i><i></i>";
+      msgs.appendChild(typing);
+      msgs.scrollTop = msgs.scrollHeight;
+      await wait(1300);
+      typing.remove();
+      addBubble("bot", text);
+    }
+    await wait(500);
+  }
+  buttons.forEach((b) => (b.disabled = false)); // tombol bisa diklik lagi
+}
+
+// Hubungkan setiap tombol dengan skenarionya
+buttons.forEach((b) => b.addEventListener("click", () => play(b.dataset.s, b)));
+</script>
+</body>
+</html>
