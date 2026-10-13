@@ -121,6 +121,15 @@ footer{padding:28px 0 40px;text-align:center;color:var(--muted);font-size:.9rem}
   .cta{padding:40px 22px}
   .msgs{height:360px}
 }
+/* ===== 6. TABEL DATA SUPABASE ===== */
+/* Bungkus tabel bisa digeser ke samping di HP, supaya 7 kolom tidak berdesakan */
+.table-box{margin-top:32px;overflow-x:auto;border:1px solid var(--line);border-radius:16px;background:#fff}
+#places{width:100%;border-collapse:collapse;font-size:.92rem;min-width:720px}
+#places th{text-align:left;font-weight:700;background:var(--soft);padding:12px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+#places td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+#places tbody tr:last-child td{border-bottom:0}
+#places td:nth-child(3),#places td:nth-child(4){font-variant-numeric:tabular-nums}
+#places a{color:var(--pri);font-weight:600}
 /* Hormati pengguna yang mematikan animasi di perangkatnya */
 @media(prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto!important}}
 </style>
@@ -143,7 +152,7 @@ footer{padding:28px 0 40px;text-align:center;color:var(--muted);font-size:.9rem}
       <h1>DuoKas</h1>
       <p class="tagline">Pisahkan uang pribadi dan bisnis, dalam kurs apa pun, cukup lewat chat Telegram.</p>
       <div class="hero-cta">
-        <a class="btn" href="https://wa.me/67073989836?text=Halo%2C%20saya%20tertarik%20dengan%20DuoKas" target="_blank" rel="noopener">Tanya via WhatsApp</a>
+        <a class="btn" href="https://wa.me/67073989836?text=Halo%2C%20saya%20tertarik%20dengan%20DuoKas" target="_blank" rel="noopener">Chat via WhatsApp</a>
         <a class="link" href="#demo">Lihat simulasinya</a>
       </div>
     </div>
@@ -238,6 +247,23 @@ footer{padding:28px 0 40px;text-align:center;color:var(--muted);font-size:.9rem}
     </div>
   </section>
 
+  <!-- ===== 6. DATA LIVE DARI SUPABASE ===== -->
+  <!-- Tabel ini diisi oleh script di bawah, diambil dari database Supabase saat halaman dibuka -->
+  <section>
+    <div class="wrap">
+      <h2>Data tempat usaha dari database</h2>
+      <p class="lead">Daftar ini diambil langsung dari database Supabase setiap kali halaman dibuka, diurutkan dari jumlah review terbanyak.</p>
+      <div class="table-box">
+        <table id="places">
+          <thead>
+            <tr><th>Nama</th><th>Kategori</th><th>Rating</th><th>Review</th><th>Kota</th><th>Telepon</th><th>Maps</th></tr>
+          </thead>
+          <tbody><tr><td colspan="7">Memuat data...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
   <!-- ===== 5. CTA ===== -->
   <section>
     <div class="wrap">
@@ -311,6 +337,56 @@ async function play(key, clicked) {
 
 // Hubungkan setiap tombol dengan skenarionya
 buttons.forEach((b) => b.addEventListener("click", () => play(b.dataset.s, b)));
+</script>
+
+<script>
+// ===== AMBIL DATA DARI SUPABASE =====
+// Alamat database dan kunci baca. Kunci ini boleh terlihat publik (publishable),
+// TAPI keamanan sebenarnya ada di aturan RLS di Supabase: pastikan hanya boleh "baca".
+const SUPABASE_URL = 'https://blcjjxclzeaoapjrvagt.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_JkjTNDwOTpBXosx8ABFPOQ_3Gl-tFeR';
+
+async function loadPlaces() {
+  const tbody = document.querySelector('#places tbody');
+  try {
+    // Minta 100 baris dari tabel "places", urut dari review terbanyak
+    const res = await fetch(
+      SUPABASE_URL + '/rest/v1/places?select=*&order=reviews_count.desc.nullslast&limit=100',
+      { headers: { apikey: SUPABASE_KEY } }
+    );
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const rows = await res.json();
+
+    tbody.replaceChildren(); // hapus tulisan "Memuat data..."
+    for (const p of rows) {
+      const tr = document.createElement('tr');
+      // 6 kolom teks; kalau kosong tampil "-"
+      for (const v of [p.title, p.category_name, p.total_score, p.reviews_count, p.city, p.phone]) {
+        const td = document.createElement('td');
+        td.textContent = v ?? '-';
+        tr.appendChild(td);
+      }
+      // Kolom ke-7: link Google Maps, hanya jika link-nya aman (https)
+      const td = document.createElement('td');
+      if (p.url && p.url.startsWith('https://')) {
+        const a = document.createElement('a');
+        a.href = p.url;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.textContent = 'Buka';
+        td.appendChild(a);
+      }
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+    }
+    if (!rows.length) tbody.innerHTML = '<tr><td colspan="7">Belum ada data.</td></tr>';
+  } catch (e) {
+    // Kalau gagal, tampilkan pesan; detail error bisa dilihat di Console (F12)
+    tbody.innerHTML = '<tr><td colspan="7">Gagal memuat data.</td></tr>';
+    console.error(e);
+  }
+}
+loadPlaces();
 </script>
 </body>
 </html>
